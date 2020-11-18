@@ -1,8 +1,11 @@
+#!/usr/bin/python
+# -*- coding:utf8 -*-
 import requests
 import datetime
 import random
 import string
 import pymysql
+
 import time
 # 导入自动化插件
 from selenium import webdriver
@@ -14,6 +17,15 @@ u_pwd = 'lol12345'
 # 初始化谷歌浏览器
 def init_chrome():
     chromeOptions = webdriver.ChromeOptions()
+    # 设置浏览器代理
+    # chromeOptions.add_argument("--proxy-server=socks5://47.242.26.6:24000")
+    # 生成谷歌浏览器
+    driver = webdriver.Chrome(options=chromeOptions)
+    return driver
+
+# 初始化IE浏览器
+def init_IE():
+    chromeOptions = webdriver.Firefox()
     # 设置浏览器代理
     # chromeOptions.add_argument("--proxy-server=socks5://47.242.26.6:24000")
     # 生成谷歌浏览器
