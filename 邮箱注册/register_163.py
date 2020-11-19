@@ -105,17 +105,42 @@ def register_163():
         driver.close()
 
 
+def check_code(adb,codeUtil):
+    adb.shell_command("input tap 796 979")
+    print("输入动态验证码")
+    time.sleep(1)
+    adb.shell_command("screencap -p /sdcard/screen.png")
+    adb.run_cmd("pull /sdcard/screen.png")
+    im = Image.open("screen.png")
+    print(im)
+    #663,936,1026,918
+    im = im.crop((663,936,918,1026))
+    im.save("b.png")
+    vcode = codeUtil.base64_api("b.png")
+    print(vcode)
+    #选中验证码框
+    adb.shell_command("input tap 356 981")
+    #输入验证码
+    adb.shell_command("input text " + vcode)
+    #点击提交验证码
+    adb.shell_command("input tap 766 1190")
+
+
+
 def register_app_163(adb):
     codeUtil = VeriCodeUtil()
-    eleUtil = Element()
-    evevt = Event()
+
+    adb.shell_command("am force-stop  com.netease.mail")
     adb.shell_command("am start -n com.netease.mail/com.netease.mobimail.activity.LaunchActivity")
     # 随机生成用户名和密码
     user_name = utils.get_one_letters() + utils.random_str(11)
     pass_word = utils.get_one_letters() + utils.random_str(6) + utils.get_one_number()
-    time.sleep(10)
-    print("点击注册")
+    time.sleep(5)
+    eleUtil = Element()
+    evevt = Event()
     #点击注册
+    time.sleep(3)
+    print("点击注册")
     regBtn = eleUtil.findElementByName(u"注册新邮箱")
     # adb.shell_command("input tap " + regBtn[0] + " " + regBtn[1])
     evevt.touch(regBtn[0],regBtn[1])
@@ -152,29 +177,12 @@ def register_app_163(adb):
 
     time.sleep(1)
     print("更换一次验证码")
-    adb.shell_command("input tap 796 979")
-
-    print("输入动态验证码")
-    time.sleep(2)
-    adb.shell_command("screencap -p /sdcard/screen.png")
-    adb.run_cmd("pull /sdcard/screen.png")
-    im = Image.open("screen.png")
-    print(im)
-    #663,936,1026,918
-    im = im.crop((663,936,918,1026))
-    im.save("b.png")
-    vcode = codeUtil.base64_api("b.png")
-    print(vcode)
-    adb.shell_command("input tap 356 981")
-    adb.shell_command("input text " + vcode)
-    adb.shell_command("input tap 766 1190")
+    check_code(adb,codeUtil)
 
     # checkCode = 1
     # while checkCode == 1:
     e = eleUtil.findElementById("alert_dialog_content_msg")
     print(e)
-
-
     print("下一步")
     print("点击输入验证码框")
     time.sleep(10)
@@ -215,7 +223,10 @@ def main():
     # check_code(codeUtil)
     # set ADB path, using a couple of popular addresses.
     # 设置adb。exe位置
-    adb.set_adb_path(r'D:\androidSDK\platform-tools\adb.exe')
+    try:
+        adb.set_adb_path('~/android-sdk-linux/platform-tools/adb')
+    except ADB.BadCall:
+        adb.set_adb_path(r'D:\androidSDK\platform-tools\adb.exe')
 
     print("[+] Using PyADB version %s" % adb.pyadb_version())
 

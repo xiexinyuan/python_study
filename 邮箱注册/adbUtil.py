@@ -9,6 +9,7 @@ import sys
 class ADB:
     PYADB_VERSION = "0.1.5jo"
 
+
     LOGGER = logging.getLogger("pyadb")
 
     _adb_path = None
@@ -487,3 +488,112 @@ class ADB:
             raise self.InternalError("which binary not found")
 
         return output
+
+
+    def start_adb(self,adbPath):
+        # 设置adb。exe位置
+        try:
+            self.set_adb_path('~/android-sdk-linux/platform-tools/adb')
+        except ADB.BadCall:
+            self.set_adb_path(r''+adbPath)
+
+        print("[+] Using PyADB version %s" % self.pyadb_version())
+
+        # verity ADB path
+        if not self.check_path():
+            print("ERROR")
+            exit(-2)
+        print("OK")
+
+        # print ADB Version
+        print("[+] ADB Version: %s" % self.get_version())
+
+        print("")
+
+        # restart server (may be other instances running)
+        # print("[+] Restarting ADB server...")
+        # try:
+        #     self.restart_server()
+        # except Exception as err:
+        #     print("\t- ERROR\n", err)
+        #     exit(-3)
+
+        # get detected devices
+        while True:
+            try:
+                devices = self.get_devices()
+            except self.PermissionsError:
+                devices = None
+                print("You haven't enough permissions!")
+                exit(-3)
+
+            if devices:
+                print("OK")
+                break
+
+            # no devices connected
+            print("No devices connected")
+            print("[+] Waiting for devices...")
+            self.wait_for_device()
+
+        # this should never be reached
+        if len(devices) == 0:
+            print("[+] No devices detected!")
+            exit(-4)
+
+        # show detected devices
+        i = 0
+        for dev in devices:
+            print("\t%d: %s" % (i, dev))
+            i += 1
+
+        # if there are more than one devices, ask to the user to choose one of them
+        if i > 1:
+            dev = i + 1
+            while dev < 0 or dev > int(i - 1):
+                # print("\n[+] Select target device [0-%d]: " % int(i - 1), end=' ')
+                dev = int(sys.stdin.readline())
+        else:
+            dev = 0
+
+        # set target device
+        try:
+            self.set_target_device(devices[dev])
+        except Exception as e:
+            print("\n[!] Error: " % e)
+            exit(-5)
+
+        print("\n[+] Using \"%s\" as target device" % devices[dev])
+
+        # check if 'su' binary is available
+
+        try:
+            supath = self.find_binary("su")
+        except ADB.AdbException as err:
+            if str(err) != "'su' was not found":
+                print("Error: %s" % err)
+                exit(-6)
+            supath = None
+
+        if supath is not None:
+            # 'su' binary has been found
+
+            print("[+] Checking if 'su' binary can give root access:")
+            print(supath)
+            try:
+                rootid = self.shell_command('%s -c id' % supath)
+                print(rootid)
+                # if 'root' in rootid.replace('(', ')').split(')'):
+                #     # it can provide root privileges
+                #     print("\t- Yes")
+                #     register_app_163(adb)
+                # else:
+                #     print("\t- No: %s" % rootid)
+                # register_app_163(adb)
+            except self.AdbException as err:
+                print("\t- No: %s" % err)
+                # register_app_163(adb)
+        else:
+            print("Not found.")
+            # get_whatsapp_nonroot(adb)
+        # exit(0)

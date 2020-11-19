@@ -30,8 +30,10 @@ class Element(object):
         """
         self.__uidump()
         tree = ET.ElementTree(file=self.tempFile + "\\uidump.xml")
+
         treeIter = tree.iter(tag="node")
         for elem in treeIter:
+            print(elem.attrib[attrib])
             if elem.attrib[attrib] == name:
                 bounds = elem.attrib["bounds"]
                 coord = self.pattern.findall(bounds)
