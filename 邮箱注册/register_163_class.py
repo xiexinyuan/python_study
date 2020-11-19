@@ -5,6 +5,7 @@ import errno
 import logging
 import random
 import string
+from os import path
 from os import getcwd
 from os import mkdir
 from os.path import basename
@@ -14,6 +15,8 @@ import re
 
 from adbUtil import ADB
 from veriCodeUtil import VeriCodeUtil
+from LeiDianCMD import Dnconsole
+
 from uiautomator import device as d
 
 from PIL import  Image
@@ -27,6 +30,8 @@ class register_163:
     phone = None
     adb = None
     verifCodeUtil = None
+    ld:Dnconsole = None
+    package = "com.netease.mail"
 
     mysql = None
 
@@ -36,11 +41,15 @@ class register_163:
         self.adb = ADB()
         self.verifCodeUtil = VeriCodeUtil()
         self.mysql = utils.get_db_conn('localhost', 3306, 'root', 'root', 'test')
+        self.ld = Dnconsole()
         #登录接码平台
         #utils.login_ssm();
+
+
+
     #同意用户须知
     def _agree_protocol(self):
-        d(resourceId="com.netease.mail:id/alert_dialog_btnOK").click()
+        d(resourceId= self.package + ":id/alert_dialog_btnOK").click()
 
     #注册页面点击注册
     def _click_register(self):
@@ -93,11 +102,11 @@ class register_163:
         #随机生成密码
         self.pass_word = utils.get_one_letters() + utils.random_str(6) + utils.get_one_number()
         #点击第一行密码输入框
-        d(resourceId="com.netease.mail:id/first_password").click()
+        d(resourceId=  self.package + ":id/first_password").click()
         #键入密码
         self._input_text(self.pass_word)
         #点击第二行密码输入框
-        d(resourceId="com.netease.mail:id/second_password").click()
+        d(resourceId= self.package + ":id/second_password").click()
         #键入密码
         self._input_text(self.pass_word)
         #点击下一步
@@ -120,13 +129,14 @@ class register_163:
             self._input_msg_code()
         else:
             #重新开始
+            self.reset_config()
             return
 
     #处理图形验证码
     def _deal_veri_code(self):
         time.sleep(2)
         #获取验证码
-        verify_code = d(resourceId="com.netease.mail:id/iv_verify_code")
+        verify_code = d(resourceId= self.package + ":id/iv_verify_code")
         #点击一次
         verify_code.click()
         time.sleep(5)
@@ -160,6 +170,13 @@ class register_163:
     #短信验证码
     def _input_msg_code(self):
         time.sleep(5)
+        #收不到验证码的号码
+        verify_text = d(resourceId= self.package + ":id/tv_resend_msg_verify_code").info["text"]
+        if verify_text.startswith("获取验证码") == False:
+            #表示当前号码使用次数太多，重新开始
+            self.start_app()
+            return
+
         #获取短信
         ver_code_str = utils.get_message("网易",self.phone)
         print("验证码内容：" + ver_code_str)
@@ -174,7 +191,7 @@ class register_163:
             #输入验证码
             self._input_text(msg_code)
             #勾选同意协议
-            d(resourceId="com.netease.mail:id/agree_check").click()
+            d(resourceId= self.package + ":id/agree_check").click()
             #完成注册
             d(text="完成注册").click()
             self._save_msg()
@@ -186,16 +203,46 @@ class register_163:
         utils.execute_sql(self.mysql, insert_sql)
         self.start_app()
 
+    def reset_config(self):
+        # self.ld.reboot(0)
+        print("退出模拟器")
+        self.ld.quit(0)
+        time.sleep(5)
+        print("配置新环境")
+        self.ld.config_new_player(0)
+        print("启动模拟器")
+        self.ld.launch(0)
+        #等待60秒
+        time.sleep(60)
+        #配置新环境
+
+        #apk地址
+        apk_path = path.abspath('..') + '/apk/mail.apk'
+        apk_path = u""+apk_path.replace("\\","/")
+        print(apk_path)
+        print("卸载网易邮箱大师")
+        self.ld.uninstall(0,self.package);
+        time.sleep(5)
+        print("安装网易邮箱大师")
+        self.ld.install(0, apk_path)
+        time.sleep(10)
+        self.start_app()
+        # else:
+        #     self.start_app()
+
     #启动APP
     def start_app(self):
         # 启动db.exe位置
         self.adb.start_adb(r'D:\ChangZhi\dnplayer2\adb.exe')
-
-        #杀死163邮箱程序
-        self.adb.shell_command("pm clear com.netease.mail")
-        #启动163邮箱程序
-        self.adb.shell_command("am start -n com.netease.mail/com.netease.mobimail.activity.LaunchActivity")
         d.screen.on()
+        # info = d(resourceId="com.netease.mail:id/tv_resend_msg_verify_code").info
+        # print(info)
+        # return
+        #杀死163邮箱程序
+        self.adb.shell_command("pm clear " + self.package)
+        #启动163邮箱程序
+        self.adb.shell_command("am start -n "+ self.package + "/com.netease.mobimail.activity.LaunchActivity")
+        # d.screen.on()
         #等待10秒
         time.sleep(10)
         #同意用户须知
@@ -208,7 +255,7 @@ class register_163:
         self._input_password()
         #输入手机号
         self._input_phone()
-        #self._deal_veri_code()
+
 if __name__ == '__main__':
     # connect mysql
     # conn = utils.get_db_conn('localhost', 3306, 'root', 'root', 'test')
@@ -226,4 +273,5 @@ if __name__ == '__main__':
     # register_app_163()
     # main();
     reg = register_163()
-    reg.start_app()
+    # reg.start_app()
+    reg.reset_config()

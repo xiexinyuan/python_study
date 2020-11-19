@@ -1,0 +1,5 @@
+.iml*
+.git*
+.idea*
+*__pycache__*
+.png
