@@ -1,5 +1,5 @@
-.iml*
-.git*
-.idea*
+.iml
+.git
+.idea
 *__pycache__*
 .png

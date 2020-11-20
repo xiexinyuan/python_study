@@ -213,7 +213,7 @@ class register_163:
         print("启动模拟器")
         self.ld.launch(0)
         #等待60秒
-        time.sleep(60)
+        time.sleep(30)
         #配置新环境
 
         #apk地址
@@ -257,21 +257,10 @@ class register_163:
         self._input_phone()
 
 if __name__ == '__main__':
-    # connect mysql
-    # conn = utils.get_db_conn('localhost', 3306, 'root', 'root', 'test')
-    # # login ssm
-    # utils.login_ssm()
-    # time.sleep(3)
-    # # register begin
-    # for i in range(1):
-    #     user_name, pass_word, phone = register_163()
-    #     if user_name is not None and pass_word is not None and phone is not None:
-    #         save_email(conn, user_name, pass_word, phone)
-    # # close mysql connect
-    # conn.close()
-    # utils.login_ssm_out()
-    # register_app_163()
-    # main();
     reg = register_163()
-    # reg.start_app()
-    reg.reset_config()
+    try:
+        reg.reset_config()
+    except Exception as e:
+        print('=========注册失败,执行下一个任务=========')
+        print(e)
+        reg.reset_config()

@@ -78,7 +78,7 @@ class Dnconsole:
     # 卸载apk 指定模拟器必须已经启动
     @staticmethod
     def uninstall(index: int, package: str):
-        cmd = Dnconsole.console + 'uninstallapp  --index %d --filename "%s"' % (index, package)
+        cmd = Dnconsole.console + 'uninstallapp  --index %d --packagename "%s"' % (index, package)
         process = os.popen(cmd)
         # return result
 
@@ -305,10 +305,21 @@ class Dnconsole:
 
     #配置一个新的模拟器
     def config_new_player(self,index: int):
+        # result = os.popen(Dnconsole.console + ' getprop --index --key "phone.mac"' + str(index))
+        # process = os.popen(Dnconsole.console + ' getprop --index --key "phone.mac"' + str(index))
+        # result = process.read()
+        # print(result)
         os.popen(Dnconsole.console + ' setprop --index ' + str(index) + ' --key "phone.imei" --value "auto" ')
         os.popen(Dnconsole.console + ' setprop --index ' + str(index) + ' --key "phone.imsi" --value "auto" ')
         os.popen(Dnconsole.console + ' setprop --index ' + str(index) + ' --key "phone.simserial" --value "auto" ')
-        os.popen(Dnconsole.console + ' modify --index ' + str(index) + ' --resolution 720,1280,320 --cpu 4 --memory 2048 --imei auto ')
+        # os.popen(Dnconsole.console + ' setprop --index ' + str(index) + ' --key "phone.manufacturer" --value "asus" ')
+        # os.popen(Dnconsole.console + ' setprop --index ' + str(index) + ' --key "phone.model" --value "ASUS_Z00DUO" ')
+        # os.popen(Dnconsole.console + ' setprop --index ' + str(index) + ' --key "phone.pnumber" --value "13812345678" ')
+        os.popen(Dnconsole.console + ' setprop --index ' + str(index) + ' --key "phone.androidid" --value "auto" ')
+        os.popen(Dnconsole.console + ' setprop --index ' + str(index) + ' --key "phone.mac" --value "auto" ')
+
+
+        os.popen(Dnconsole.console + ' modify --index ' + str(index) + ' --resolution 720,1280,320 --cpu 4 --memory 2048')
 
 
 
