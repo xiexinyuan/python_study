@@ -57,19 +57,21 @@ class  douyin_reg:
         # 启动db.exe位置
         self.adb.start_adb(r'D:\ChangZhi\dnplayer2\adb.exe')
         #杀死1程序
-        self.adb.shell_command("pm clear " + self.package)
-        print("卸载抖音")
-        self.ld.uninstall(0,self.package);
-        time.sleep(5)
-        self.ld.config_new_player(0)
-        time.sleep(3)
-        print("安装抖音")
-        self.ld.install(0, apk_path)
-
-        time.sleep(20)
+        # self.adb.shell_command("pm clear " + self.package)
+        # print("卸载抖音")
+        # self.adb.run_cmd("uninstall " + self.package)
+        # self.ld.uninstall(0,self.package);
+        # time.sleep(5)
+        # self.ld.config_new_player(0)
+        # time.sleep(3)
+        # print("安装抖音")
+        # self.ld.install(0, apk_path)
+        # self.adb.run_cmd("install " + apk_path)
+        # time.sleep(20)
         print("启动抖音")
         #启动app
-        self.adb.shell_command("am start -n "+ self.package + "/.account.business.login.DYLoginActivity")
+        self.adb.shell_command("am start -n "+ self.package + "/com.ss.android.ugc.aweme.splash.SplashActivity")
+        # self.adb.shell_command("am start -n "+ self.package + "/.account.business.login.DYLoginActivity")
 
 
 if __name__ == '__main__':

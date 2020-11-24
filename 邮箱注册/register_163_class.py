@@ -168,7 +168,7 @@ class register_163:
             self._deal_veri_code()
 
     #短信验证码
-    def _input_msg_code(self):
+    def _input_msg_code(self,maxTime=10):
         time.sleep(5)
         #收不到验证码的号码
         verify_text = d(resourceId= self.package + ":id/tv_resend_msg_verify_code").info["text"]
@@ -186,7 +186,11 @@ class register_163:
         if len(msg_code) != 6:
             #5秒后重新获取验证码
             # time.sleep(5)
-            self._input_msg_code()
+            # 最多获取十次验证码
+            if maxTime > 0:
+                self._input_msg_code(maxTime-1)
+            else:
+                self.start_app()
         else:
             #输入验证码
             self._input_text(msg_code)
